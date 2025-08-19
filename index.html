@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mem🧠ry Champ</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<style>
+body {font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;background: linear-gradient(135deg, #1a2a6c, #b21f1f);min-height: 100vh;margin: 0;padding: 20px;color: white;}
+.header {text-align: center;padding: 20px 0;}
+h1 {font-size: 2.5rem;margin: 0;background: linear-gradient(to right, #ff8a00, #da1b60);-webkit-background-clip: text;-webkit-text-fill-color: transparent;display: inline-block;}
+.brain-emoji {font-size: 2.2rem;display: inline-block;background: linear-gradient(45deg, #f8a5c2, #f5c6d9);-webkit-background-clip: text;-webkit-text-fill-color: transparent;animation: brainPulse 2s infinite alternate;}
+@keyframes brainPulse {0% {transform: scale(1);}100% {transform: scale(1.05);}}
+.creator {margin: 10px 0;font-size: 1.1rem;}
+.creator a {color: #4fc3f7;text-decoration: underline;font-weight: bold;}
+.creator a:hover {color: #81d4fa;}
+.main-container {display: flex;justify-content: space-between;flex-wrap: wrap;max-width: 1200px;margin: 0 auto;}
+.panel {background: rgba(0, 0, 0, 0.7);padding: 20px;border-radius: 10px;flex: 1;min-width: 250px;margin: 10px;}
+.game-panel {flex: 2;min-width: 400px;}
+.leaderboard-panel {flex: 1;min-width: 300px;overflow-x: auto;}
+.grid {display: grid;grid-template-columns: repeat(3, 1fr);gap: 15px;margin: 20px 0;justify-items: center;}
+.card {width: 100px;height: 100px;perspective: 1000px;cursor: pointer;position: relative;transition: transform 0.2s;}
+.card:not(.flipped):hover {transform: scale(1.05);box-shadow: 0 0 15px rgba(156, 75, 75, 0.6);}
+.inner {width: 100%;height: 100%;transition: transform 0.6s;transform-style: preserve-3d;position: relative;}
+.flipped .inner {transform: rotateY(180deg);}
+.front, .back {position: absolute;width: 100%;height: 100%;backface-visibility: hidden;border-radius: 10px;display: flex;align-items: center;justify-content: center;font-weight: bold;box-shadow: 0 4px 8px rgba(0,0,0,0.2);}
+.front {background: #2196F3;font-size: 30px;color: white;}
+.back {background: #FF5722;transform: rotateY(180deg);}
+button {background: #4CAF50;color: white;border: none;padding: 10px 20px;border-radius: 5px;cursor: pointer;margin-top: 10px;}
+button:hover {background: #43A047;}
+table {width: 100%;border-collapse: collapse;margin-top: 15px;}
+th, td {padding: 8px;text-align: center;border-bottom: 1px solid rgba(255,255,255,0.1);}
+th {background: rgba(255,152,0,0.3);}
+tr:nth-child(even) {background: rgba(255,255,255,0.05);}
+.rank-1 {color: gold;font-weight: bold;}
+.rank-2 {color: silver;}
+.rank-3 {color: #cd7f32;}
+.volume-row {display: flex;justify-content: space-between;align-items: flex-start;gap: 10px;flex-wrap: wrap;}
+.volume-controls {margin-top: 10px;}
+.volume-controls label {display: block;margin: 5px 0;}
+.tutorial {font-size: 12px;max-width: 180px;background: rgba(255,255,255,0.1);padding: 8px;border-radius: 6px;line-height: 1.4;}
+@media (max-width: 768px) {.main-container {flex-direction: column;}.game-panel, .leaderboard-panel {min-width: 100%;}}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>Mem<span class="brain-emoji">🧠</span>ry Champ</h1>
+<div class="creator">Game by <a href="https://instagram.com/better_call_aman_30.05" target="_blank">@better_call_aman_30.05</a></div>
+</div>
+<div class="main-container">
+<div class="panel game-panel">
+<div class="volume-row">
+<div class="volume-controls">
+<label for="flipVolume">Flip Sound Volume:</label>
+<input type="range" id="flipVolume" min="0" max="1" step="0.1" value="0.3">
+<label for="bgmVolume">Music Volume:</label>
+<input type="range" id="bgmVolume" min="0" max="1" step="0.1" value="0.7">
+</div>
+<div class="tutorial">
+<b>How to Play:</b><br>
+1) Click cards one by one to flip them<br>
+2) Flip cards in correct alphabetical order<br>
+3) If wrong order, board resets & attempt increases<br>
+4) Reveal all cards correctly, click Restart to play again
+</div>
+</div>
+<div class="grid" id="grid"></div>
+<button id="restartBtn" style="display:none">Restart Game</button>
+<div id="playerStats">
+<p>Player: <span id="usernameDisplay"></span></p>
+<p>Attempts: <span id="attempts">0</span></p>
+</div>
+</div>
+<div class="panel leaderboard-panel">
+<h3>Leaderboard</h3>
+<table>
+<thead><tr><th>Rank</th><th>Player</th><th>Attempts</th></tr></thead>
+<tbody id="leaderboard"></tbody>
+</table>
+</div>
+</div>
+
+<script>
+const firebaseConfig = {
+apiKey: "AIzaSyDE9r5UhnB5JBhzTGoEvaH0uGHdLnIB3m0",
+authDomain: "memory-9uessing-champ.firebaseapp.com",
+databaseURL: "https://memory-9uessing-champ-default-rtdb.asia-southeast1.firebasedatabase.app",
+projectId: "memory-9uessing-champ",
+storageBucket: "memory-9uessing-champ.appspot.com",
+messagingSenderId: "486947166938",
+appId: "1:486947166938:web:4b04e0b80cc7bf61f263e3",
+measurementId: "G-GVFEK3R85J"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const animals = ["Lion","Tiger","Elephant","Zebra","Monkey","Bear","Giraffe","Panda","Fox"];
+const sortedAnimals = [...animals].sort();
+let currentIndex = 0, attempts = 1, lastFlipped = "", audioContext, flipSoundGain, bgMusicGain, playerName = "", bestScore = Infinity;
+const grid = document.getElementById("grid"), restartBtn = document.getElementById("restartBtn"), flipVolumeControl = document.getElementById("flipVolume"), bgmVolumeControl = document.getElementById("bgmVolume"), usernameDisplay = document.getElementById("usernameDisplay"), attemptsDisplay = document.getElementById("attempts"), leaderboardElement = document.getElementById("leaderboard");
+
+function initAudio(){try{audioContext=new(window.AudioContext||window.webkitAudioContext)();flipSoundGain=audioContext.createGain();flipSoundGain.gain.value=parseFloat(flipVolumeControl.value);flipSoundGain.connect(audioContext.destination);bgMusicGain=audioContext.createGain();bgMusicGain.gain.value=parseFloat(bgmVolumeControl.value);bgMusicGain.connect(audioContext.destination);}catch(e){console.error("Audio init failed",e);}}
+function playFlipSound(){if(!audioContext)return;const o=audioContext.createOscillator();o.type="sine";o.frequency.value=600;o.connect(flipSoundGain);o.start();o.stop(audioContext.currentTime+0.1);}
+function playBgMusic(){const chords=[[392,494,587],[440,554,659],[349,440,523],[330,415,494]];let i=0;function playChord(){if(!audioContext)return;chords[i].forEach((note,idx)=>{const o=audioContext.createOscillator(),g=audioContext.createGain();o.type="triangle";o.frequency.value=note;o.connect(g);g.connect(bgMusicGain);const delay=idx*0.05;g.gain.setValueAtTime(0,audioContext.currentTime+delay);g.gain.linearRampToValueAtTime(0.3*parseFloat(bgmVolumeControl.value),audioContext.currentTime+delay+0.1);g.gain.exponentialRampToValueAtTime(0.001,audioContext.currentTime+delay+1.5);o.start(audioContext.currentTime+delay);o.stop(audioContext.currentTime+delay+1.5);});i=(i+1)%chords.length;if(audioContext)setTimeout(playChord,1500);}
+playChord();}
+
+function createBoard(){grid.innerHTML="";animals.forEach(animal=>{const c=document.createElement("div");c.className="card";const inner=document.createElement("div");inner.className="inner";const front=document.createElement("div");front.className="front";front.textContent="?";const back=document.createElement("div");back.className="back";back.textContent=animal;inner.append(front,back);c.appendChild(inner);c.onclick=()=>flipCard(c,animal);grid.appendChild(c);});}
+function flipCard(c,animal){if(c.classList.contains("flipped"))return;c.classList.add("flipped");playFlipSound();if(lastFlipped&&animal<lastFlipped){setTimeout(()=>{resetBoard();attempts++;attemptsDisplay.textContent=attempts;},500);return;}lastFlipped=animal;if(animal===sortedAnimals[currentIndex]){currentIndex++;if(currentIndex===animals.length)setTimeout(()=>{updateLeaderboard();alert(`Congrats ${playerName}! Attempts: ${attempts}`);restartBtn.style.display="block";saveScore();},300);}}
+function resetBoard(){document.querySelectorAll(".card").forEach(c=>c.classList.remove("flipped"));currentIndex=0;lastFlipped="";}
+function saveScore(){db.ref("leaderboard").push({name:playerName,attempts});}
+function updateLeaderboard(){db.ref("leaderboard").orderByChild("attempts").limitToFirst(10).once("value",snap=>{leaderboardElement.innerHTML="";let rank=1;snap.forEach(d=>{const{ name,attempts}=d.val();const r=document.createElement("tr");if(rank===1)r.classList.add("rank-1");if(rank===2)r.classList.add("rank-2");if(rank===3)r.classList.add("rank-3");r.innerHTML=`<td>${rank}</td><td>${name}</td><td>${attempts}</td>`;leaderboardElement.appendChild(r);rank++;});});}
+document.addEventListener("DOMContentLoaded",()=>{playerName=localStorage.getItem("memoryChampUsername")||prompt("Enter your name:")||"Player";localStorage.setItem("memoryChampUsername",playerName);usernameDisplay.textContent=playerName;attemptsDisplay.textContent=attempts;initAudio();playBgMusic();createBoard();updateLeaderboard();});
+flipVolumeControl.oninput=e=>{flipSoundGain.gain.value=parseFloat(e.target.value);};
+bgmVolumeControl.oninput=e=>{bgMusicGain.gain.value=parseFloat(e.target.value);};
+restartBtn.onclick=()=>{resetBoard();attempts=1;attemptsDisplay.textContent=attempts;restartBtn.style.display="none";};
+</script>
+</body>
+</html>
