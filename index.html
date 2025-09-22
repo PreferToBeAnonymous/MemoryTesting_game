@@ -1,118 +1,663 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mem🧠ry Champ</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+
+<title>Memory Champ 🧠 | Free Online Memory Game with Daily Leaderboard</title>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Memory Champ",
+  "url": "https://memory-9uessing-champ.web.app/",
+  "logo": "https://memory-9uessing-champ.web.app/logo.png"
+}
+</script>
+
+<meta name="description" content="Play free online memory games with a daily leaderboard to compete with others. Test your brain, flip cards in order, and become the Memory Champ 🧠.">
+<meta name="keywords" content="memory game online, free brain games, daily leaderboard game, play memory champ, online guessing game, flip card game, compete with friends, compete with others">
+<meta name="author" content="better_call_aman_30.05">
+
+<meta property="og:title" content="Memory Champ 🧠 | Free Online Memory Game with Daily Leaderboard">
+<meta property="og:description" content="Play free online memory games with a daily leaderboard to compete with others. Test your brain, flip cards in order, and become the Memory Champ 🧠.">
+<meta property="og:image" content="https://memory-9uessing-champ.web.app/memory-champ-game-leaderboard.webp">
+<meta property="og:image:type" content="image/webp">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="820">
+<meta property="og:url" content="https://memory-9uessing-champ.web.app">
+<meta property="og:type" content="website">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Memory Champ 🧠 | Free Online Memory Game with Daily Leaderboard">
+<meta name="twitter:description" content="Play free online memory games with a daily leaderboard to compete with others. Test your brain, flip cards in order, and become the Memory Champ 🧠.">
+<meta name="twitter:image" content="https://memory-9uessing-champ.web.app/memory-champ-game-leaderboard.webp">
+
+<!-- Firebase compat libs -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<!-- FAVICONS -->
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
+<link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
+<link rel="apple-touch-icon" sizes="180x180" href="favicon-180x180.png">
+<meta name="theme-color" content="#ffffff">
+
 <style>
-body {font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;background: linear-gradient(135deg, #1a2a6c, #b21f1f);min-height: 100vh;margin: 0;padding: 20px;color: white;}
-.header {text-align: center;padding: 20px 0;}
-h1 {font-size: 2.5rem;margin: 0;background: linear-gradient(to right, #ff8a00, #da1b60);-webkit-background-clip: text;-webkit-text-fill-color: transparent;display: inline-block;}
-.brain-emoji {font-size: 2.2rem;display: inline-block;background: linear-gradient(45deg, #f8a5c2, #f5c6d9);-webkit-background-clip: text;-webkit-text-fill-color: transparent;animation: brainPulse 2s infinite alternate;}
-@keyframes brainPulse {0% {transform: scale(1);}100% {transform: scale(1.05);}}
-.creator {margin: 10px 0;font-size: 1.1rem;}
-.creator a {color: #4fc3f7;text-decoration: underline;font-weight: bold;}
-.creator a:hover {color: #81d4fa;}
-.main-container {display: flex;justify-content: space-between;flex-wrap: wrap;max-width: 1200px;margin: 0 auto;}
-.panel {background: rgba(0, 0, 0, 0.7);padding: 20px;border-radius: 10px;flex: 1;min-width: 250px;margin: 10px;}
-.game-panel {flex: 2;min-width: 400px;}
-.leaderboard-panel {flex: 1;min-width: 300px;overflow-x: auto;}
-.grid {display: grid;grid-template-columns: repeat(3, 1fr);gap: 15px;margin: 20px 0;justify-items: center;}
-.card {width: 100px;height: 100px;perspective: 1000px;cursor: pointer;position: relative;transition: transform 0.2s;}
-.card:not(.flipped):hover {transform: scale(1.05);box-shadow: 0 0 15px rgba(156, 75, 75, 0.6);}
-.inner {width: 100%;height: 100%;transition: transform 0.6s;transform-style: preserve-3d;position: relative;}
-.flipped .inner {transform: rotateY(180deg);}
-.front, .back {position: absolute;width: 100%;height: 100%;backface-visibility: hidden;border-radius: 10px;display: flex;align-items: center;justify-content: center;font-weight: bold;box-shadow: 0 4px 8px rgba(0,0,0,0.2);}
-.front {background: #2196F3;font-size: 30px;color: white;}
-.back {background: #FF5722;transform: rotateY(180deg);}
-button {background: #4CAF50;color: white;border: none;padding: 10px 20px;border-radius: 5px;cursor: pointer;margin-top: 10px;}
-button:hover {background: #43A047;}
-table {width: 100%;border-collapse: collapse;margin-top: 15px;}
-th, td {padding: 8px;text-align: center;border-bottom: 1px solid rgba(255,255,255,0.1);}
-th {background: rgba(255,152,0,0.3);}
-tr:nth-child(even) {background: rgba(255,255,255,0.05);}
-.rank-1 {color: gold;font-weight: bold;}
-.rank-2 {color: silver;}
-.rank-3 {color: #cd7f32;}
-.volume-row {display: flex;justify-content: space-between;align-items: flex-start;gap: 10px;flex-wrap: wrap;}
-.volume-controls {margin-top: 10px;}
-.volume-controls label {display: block;margin: 5px 0;}
-.tutorial {font-size: 12px;max-width: 180px;background: rgba(255,255,255,0.1);padding: 8px;border-radius: 6px;line-height: 1.4;}
-@media (max-width: 768px) {.main-container {flex-direction: column;}.game-panel, .leaderboard-panel {min-width: 100%;}}
+/* ---- look & feel ---- */
+:root {
+  --panel-bg: rgba(0,0,0,0.7);
+  --accent: linear-gradient(to right, #ff8a00, #da1b60);
+}
+* {box-sizing: border-box}
+body {font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;background: linear-gradient(135deg, #1a2a6c, #b21f1f);min-height:100vh;margin:0;padding:20px;color:#fff;}
+.header {text-align:center;padding:20px 0;}
+h1 {font-size:2.4rem;margin:0;background:var(--accent);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;}
+.brain-emoji {font-size:2rem;display:inline-block;background: linear-gradient(45deg,#f8a5c2,#f5c6d9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:brainPulse 2s infinite alternate;}
+@keyframes brainPulse{0%{transform:scale(1)}100%{transform:scale(1.05)}}
+.creator {margin:10px 0;font-size:1rem;}
+.creator a {color:#4fc3f7;text-decoration:underline;font-weight:700;}
+.creator a:hover {color:#81d4fa;}
+
+.main-container {display:flex;justify-content:space-between;flex-wrap:wrap;max-width:1200px;margin:0 auto;}
+.panel {background:var(--panel-bg);padding:20px;border-radius:10px;flex:1;min-width:250px;margin:10px;}
+.game-panel {flex:2;min-width:420px;}
+.leaderboard-panel {flex:1;min-width:320px;overflow-x:auto;}
+
+.grid {display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:20px 0;justify-items:center;}
+.card{width:100px;height:100px;perspective:1000px;cursor:pointer;position:relative;transition:transform .2s;}
+.card:not(.flipped):hover{transform:scale(1.05);box-shadow:0 0 15px rgba(0,0,0,0.3);}
+.inner{width:100%;height:100%;transition:transform .6s;transform-style:preserve-3d;position:relative;border-radius:10px;}
+.card.flipped .inner{transform:rotateY(180deg);}
+.front,.back{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;box-shadow:0 4px 8px rgba(0,0,0,0.2);}
+.front{background:#2196F3;font-size:30px;color:#fff;}
+.back{background:#FF5722;color:#fff;transform:rotateY(180deg);font-size:16px;padding:6px;text-align:center;line-height:1.1;word-break:break-word;}
+
+button{background:#4CAF50;color:#fff;border:none;padding:10px 18px;border-radius:5px;cursor:pointer;margin-top:10px;}
+button:hover{background:#43A047}
+.volume-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;}
+.volume-controls{margin-top:10px;}
+.volume-controls label{display:block;margin:6px 0;font-size:13px;}
+.tutorial{font-size:12px;max-width:240px;background:rgba(255,255,255,0.06);padding:8px;border-radius:6px;line-height:1.4;}
+.date-select{margin-bottom:10px;}
+.admin-panel{background:rgba(255,255,255,0.04);padding:15px;margin:10px 0;border-radius:8px;}
+.admin-panel input{width:80px;margin:3px;}
+.admin-panel button{margin-top:10px;}
+
+table{width:100%;border-collapse:collapse;margin-top:15px;background:transparent;}
+th,td{padding:8px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.08);white-space:nowrap;font-size:13px;}
+th{background:rgba(255,152,0,0.25);font-weight:700;}
+tr:nth-child(even){background:rgba(255,255,255,0.03);}
+
+.rank-1{color:gold;font-weight:700}
+.rank-2{color:silver}
+.rank-3{color:#cd7f32}
+
+/* result modal */
+#resultModal{position:fixed;left:50%;top:14%;transform:translateX(-50%);min-width:260px;max-width:92vw;padding:14px 16px;border-radius:10px;z-index:10000;display:none;box-shadow:0 8px 30px rgba(0,0,0,0.4);text-align:center;font-weight:700;word-break:break-word;}
+#resultModal.show{display:block}
+#resultModal.success{background:rgba(46,125,50,0.98);color:#fff}
+#resultModal.error{background:rgba(211,47,47,0.95);color:#fff}
+#resultModal .msg{font-size:15px;line-height:1.3}
+
+/* responsiveness */
+@media (max-width:1024px){
+  .game-panel{min-width:300px}
+  .leaderboard-panel{min-width:260px}
+  .card{width:90px;height:90px}
+}
+@media (max-width:768px){
+  .main-container{flex-direction:column}
+  .game-panel,.leaderboard-panel{min-width:100%;margin:10px 0}
+  .grid{grid-template-columns:repeat(3,1fr);gap:10px}
+  .card{width:80px;height:80px}
+  .tutorial{max-width:100%;font-size:12px}
+  #resultModal{top:8%;padding:12px;font-size:14px}
+}
+@media (max-width:360px){
+  .card{width:70px;height:70px}
+  .front,.back{font-size:16px}
+  .tutorial{font-size:11px}
+}
 </style>
 </head>
 <body>
 <div class="header">
-<h1>Mem<span class="brain-emoji">🧠</span>ry Champ</h1>
-<div class="creator">Game by <a href="https://instagram.com/better_call_aman_30.05" target="_blank">@better_call_aman_30.05</a></div>
-</div>
-<div class="main-container">
-<div class="panel game-panel">
-<div class="volume-row">
-<div class="volume-controls">
-<label for="flipVolume">Flip Sound Volume:</label>
-<input type="range" id="flipVolume" min="0" max="1" step="0.1" value="0.3">
-<label for="bgmVolume">Music Volume:</label>
-<input type="range" id="bgmVolume" min="0" max="1" step="0.1" value="0.7">
-</div>
-<div class="tutorial">
-<b>How to Play:</b><br>
-1) Click cards one by one to flip them<br>
-2) Flip cards in correct alphabetical order<br>
-3) If wrong order, board resets & attempt increases<br>
-4) Reveal all cards correctly, click Restart to play again
-</div>
-</div>
-<div class="grid" id="grid"></div>
-<button id="restartBtn" style="display:none">Restart Game</button>
-<div id="playerStats">
-<p>Player: <span id="usernameDisplay"></span></p>
-<p>Attempts: <span id="attempts">0</span></p>
-</div>
-</div>
-<div class="panel leaderboard-panel">
-<h3>Leaderboard</h3>
-<table>
-<thead><tr><th>Rank</th><th>Player</th><th>Attempts</th></tr></thead>
-<tbody id="leaderboard"></tbody>
-</table>
-</div>
+  <h1>Mem<span class="brain-emoji">🧠</span>ry Champ</h1>
+  <div class="creator">Game by <a href="https://instagram.com/better_call_aman_30.05" target="_blank">@better_call_aman_30.05</a></div>
+  <div style="margin-top:10px;">
+    <button id="playMusicBtn">Play Music 🎶</button>
+  </div>
+  <!-- crawler-friendly image -->
+  <img src="https://memory-9uessing-champ.web.app/memory-champ-game-leaderboard.webp" alt="Memory Champ preview" style="display:none;">
 </div>
 
+<div class="main-container">
+  <div class="panel game-panel">
+    <div class="volume-row">
+      <div class="volume-controls">
+        <label for="flipVolume">Flip Sound Volume:</label>
+        <input type="range" id="flipVolume" min="0" max="1" step="0.1" value="0.3">
+        <label for="bgmVolume">Music Volume:</label>
+        <input type="range" id="bgmVolume" min="0" max="1" step="0.1" value="0.7">
+      </div>
+
+      <div class="tutorial">
+        <b>How to Play:</b><br>
+        1) Click cards one by one to flip them<br>
+        2) Flip cards in correct alphabetical order<br>
+        3) If wrong order, board resets & attempt increases<br>
+        4) Reveal all cards correctly, click Restart to play again<br><br>
+        <b>Note:</b> The same user with the same number of attempts is not allowed in the leaderboard.
+      </div>
+    </div>
+
+    <div class="grid" id="grid" aria-live="polite"></div>
+    <button id="restartBtn" style="display:none">Restart Game</button>
+
+    <div id="playerStats" style="margin-top:10px;">
+      <p>Player: <span id="usernameDisplay"></span></p>
+      <p>Attempts: <span id="attempts">0</span></p>
+    </div>
+
+    <div class="admin-panel" id="adminPanel" style="display:none">
+      <h3>Admin: Update Daily Questions</h3>
+      <label for="adminDate">Select Date:</label>
+      <input type="date" id="adminDate"><br>
+      <div id="adminGrid"></div>
+      <button id="saveQuestionsBtn">Save Questions</button>
+    </div>
+  </div>
+
+  <div class="panel leaderboard-panel">
+    <h3>Daily Leaderboard</h3>
+    <div class="date-select">
+      <label for="leaderboardDate">Select Date:</label>
+      <input type="date" id="leaderboardDate">
+    </div>
+
+    <table aria-live="polite">
+      <thead><tr><th>Rank</th><th>Player</th><th>Attempts</th><th>Tries</th></tr></thead>
+      <tbody id="leaderboard"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Result modal -->
+<div id="resultModal" role="alert" aria-live="assertive"><div class="msg"></div></div>
+
 <script>
+/* ===================== FIREBASE CONFIG ===================== */
 const firebaseConfig = {
-apiKey: "AIzaSyDE9r5UhnB5JBhzTGoEvaH0uGHdLnIB3m0",
-authDomain: "memory-9uessing-champ.firebaseapp.com",
-databaseURL: "https://memory-9uessing-champ-default-rtdb.asia-southeast1.firebasedatabase.app",
-projectId: "memory-9uessing-champ",
-storageBucket: "memory-9uessing-champ.appspot.com",
-messagingSenderId: "486947166938",
-appId: "1:486947166938:web:4b04e0b80cc7bf61f263e3",
-measurementId: "G-GVFEK3R85J"
+  apiKey: "AIzaSyDE9r5UhnB5JBhzTGoEvaH0uGHdLnIB3m0",
+  authDomain: "memory-9uessing-champ.firebaseapp.com",
+  databaseURL: "https://memory-9uessing-champ-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "memory-9uessing-champ",
+  storageBucket: "memory-9uessing-champ.appspot.com",
+  messagingSenderId: "486947166938",
+  appId: "1:486947166938:web:4b04e0b80cc7bf61f263e3",
+  measurementId: "G-GVFEK3R85J"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const animals = ["Lion","Tiger","Elephant","Zebra","Monkey","Bear","Giraffe","Panda","Fox"];
-const sortedAnimals = [...animals].sort();
-let currentIndex = 0, attempts = 1, lastFlipped = "", audioContext, flipSoundGain, bgMusicGain, playerName = "", bestScore = Infinity;
-const grid = document.getElementById("grid"), restartBtn = document.getElementById("restartBtn"), flipVolumeControl = document.getElementById("flipVolume"), bgmVolumeControl = document.getElementById("bgmVolume"), usernameDisplay = document.getElementById("usernameDisplay"), attemptsDisplay = document.getElementById("attempts"), leaderboardElement = document.getElementById("leaderboard");
 
-function initAudio(){try{audioContext=new(window.AudioContext||window.webkitAudioContext)();flipSoundGain=audioContext.createGain();flipSoundGain.gain.value=parseFloat(flipVolumeControl.value);flipSoundGain.connect(audioContext.destination);bgMusicGain=audioContext.createGain();bgMusicGain.gain.value=parseFloat(bgmVolumeControl.value);bgMusicGain.connect(audioContext.destination);}catch(e){console.error("Audio init failed",e);}}
-function playFlipSound(){if(!audioContext)return;const o=audioContext.createOscillator();o.type="sine";o.frequency.value=600;o.connect(flipSoundGain);o.start();o.stop(audioContext.currentTime+0.1);}
-function playBgMusic(){const chords=[[392,494,587],[440,554,659],[349,440,523],[330,415,494]];let i=0;function playChord(){if(!audioContext)return;chords[i].forEach((note,idx)=>{const o=audioContext.createOscillator(),g=audioContext.createGain();o.type="triangle";o.frequency.value=note;o.connect(g);g.connect(bgMusicGain);const delay=idx*0.05;g.gain.setValueAtTime(0,audioContext.currentTime+delay);g.gain.linearRampToValueAtTime(0.3*parseFloat(bgmVolumeControl.value),audioContext.currentTime+delay+0.1);g.gain.exponentialRampToValueAtTime(0.001,audioContext.currentTime+delay+1.5);o.start(audioContext.currentTime+delay);o.stop(audioContext.currentTime+delay+1.5);});i=(i+1)%chords.length;if(audioContext)setTimeout(playChord,1500);}
-playChord();}
+/* ===================== State & DOM refs ===================== */
+let currentQuestions = [];
+let sortedQuestions = [];
+let currentIndex = 0;
+let attempts = 1;
+let lastFlipped = "";
+let audioContext = null, flipSoundGain = null, bgMusicGain = null, bgMusicSource = null;
+let playerName = "";
+let activeLeaderboardRef = null;
 
-function createBoard(){grid.innerHTML="";animals.forEach(animal=>{const c=document.createElement("div");c.className="card";const inner=document.createElement("div");inner.className="inner";const front=document.createElement("div");front.className="front";front.textContent="?";const back=document.createElement("div");back.className="back";back.textContent=animal;inner.append(front,back);c.appendChild(inner);c.onclick=()=>flipCard(c,animal);grid.appendChild(c);});}
-function flipCard(c,animal){if(c.classList.contains("flipped"))return;c.classList.add("flipped");playFlipSound();if(lastFlipped&&animal<lastFlipped){setTimeout(()=>{resetBoard();attempts++;attemptsDisplay.textContent=attempts;},500);return;}lastFlipped=animal;if(animal===sortedAnimals[currentIndex]){currentIndex++;if(currentIndex===animals.length)setTimeout(()=>{updateLeaderboard();alert(`Congrats ${playerName}! Attempts: ${attempts}`);restartBtn.style.display="block";saveScore();},300);}}
-function resetBoard(){document.querySelectorAll(".card").forEach(c=>c.classList.remove("flipped"));currentIndex=0;lastFlipped="";}
-function saveScore(){db.ref("leaderboard").push({name:playerName,attempts});}
-function updateLeaderboard(){db.ref("leaderboard").orderByChild("attempts").limitToFirst(10).once("value",snap=>{leaderboardElement.innerHTML="";let rank=1;snap.forEach(d=>{const{ name,attempts}=d.val();const r=document.createElement("tr");if(rank===1)r.classList.add("rank-1");if(rank===2)r.classList.add("rank-2");if(rank===3)r.classList.add("rank-3");r.innerHTML=`<td>${rank}</td><td>${name}</td><td>${attempts}</td>`;leaderboardElement.appendChild(r);rank++;});});}
-document.addEventListener("DOMContentLoaded",()=>{playerName=localStorage.getItem("memoryChampUsername")||prompt("Enter your name:")||"Player";localStorage.setItem("memoryChampUsername",playerName);usernameDisplay.textContent=playerName;attemptsDisplay.textContent=attempts;initAudio();playBgMusic();createBoard();updateLeaderboard();});
-flipVolumeControl.oninput=e=>{flipSoundGain.gain.value=parseFloat(e.target.value);};
-bgmVolumeControl.oninput=e=>{bgMusicGain.gain.value=parseFloat(e.target.value);};
-restartBtn.onclick=()=>{resetBoard();attempts=1;attemptsDisplay.textContent=attempts;restartBtn.style.display="none";};
+const grid = document.getElementById("grid"),
+      restartBtn = document.getElementById("restartBtn"),
+      flipVolumeElem = document.getElementById("flipVolume"),
+      bgmVolumeElem = document.getElementById("bgmVolume"),
+      usernameDisplay = document.getElementById("usernameDisplay"),
+      attemptsDisplay = document.getElementById("attempts"),
+      leaderboardElement = document.getElementById("leaderboard"),
+      leaderboardDate = document.getElementById("leaderboardDate"),
+      adminPanel = document.getElementById("adminPanel"),
+      adminDate = document.getElementById("adminDate"),
+      adminGrid = document.getElementById("adminGrid"),
+      saveQuestionsBtn = document.getElementById("saveQuestionsBtn"),
+      playMusicBtn = document.getElementById("playMusicBtn"),
+      resultModal = document.getElementById('resultModal'),
+      resultMsg = resultModal.querySelector('.msg');
+
+/* ===================== Admin helpers ===================== */
+function createAdminInputs(){
+  adminGrid.innerHTML = '';
+  for(let r=0;r<3;r++){
+    const rowDiv = document.createElement('div');
+    rowDiv.style.display = 'flex';
+    rowDiv.style.gap = '6px';
+    rowDiv.style.margin = '6px 0';
+    for(let c=0;c<3;c++){
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.placeholder = `R${r+1}C${c+1}`;
+      input.dataset.index = r*3 + c;
+      input.style.width = '80px';
+      rowDiv.appendChild(input);
+    }
+    adminGrid.appendChild(rowDiv);
+  }
+}
+
+async function loadAdminQuestions(dateKey){
+  if(!dateKey) return;
+  const snap = await db.ref('dailyQuestions/' + dateKey).get();
+  if(snap.exists()){
+    const q = snap.val();
+    adminGrid.querySelectorAll('input').forEach((inp,i)=> inp.value = q[i] || '');
+  } else {
+    adminGrid.querySelectorAll('input').forEach(inp=> inp.value = '');
+  }
+}
+
+saveQuestionsBtn.onclick = async () => {
+  const dateKey = adminDate.value;
+  if(!dateKey){ alert('Select date'); return; }
+  const arr = [];
+  adminGrid.querySelectorAll('input').forEach(inp => arr.push(inp.value || '?'));
+  await db.ref('dailyQuestions/' + dateKey).set(arr);
+  alert('Questions saved for ' + dateKey);
+};
+
+adminDate.onchange = ()=> {
+  if(adminDate.value) loadAdminQuestions(adminDate.value);
+};
+
+async function adminLogin(){
+  const pwd = prompt('Enter admin password:');
+  if(pwd === 'admin123'){
+    adminPanel.style.display = 'block';
+    createAdminInputs();
+  } else {
+    alert('Wrong password!');
+  }
+}
+
+/* ===================== Username handling ===================== */
+async function registerUsername(username){
+  const userRef = db.ref('usernames/' + username);
+  const snap = await userRef.get();
+  if(snap.exists()){
+    alert('Username taken! Choose another.');
+    return false;
+  }
+  await userRef.set({ createdAt: Date.now() });
+  localStorage.setItem('memoryChampUsername', username);
+  return true;
+}
+
+async function askForUsername(){
+  let saved = localStorage.getItem('memoryChampUsername');
+  if(saved){
+    playerName = saved;
+    usernameDisplay.textContent = playerName;
+    return true;
+  }
+
+  while(true){
+    const username = prompt('Enter a unique username (required):');
+    if(username === null || username.trim() === ''){
+      alert('You must enter a username to play. If you cancel, the game will not start.');
+      return false;
+    }
+    const ok = await registerUsername(username.trim());
+    if(ok){
+      playerName = username.trim();
+      usernameDisplay.textContent = playerName;
+      return true;
+    }
+  }
+}
+
+/* ===================== AUDIO init & controls ===================== */
+function initAudio(){
+  try{
+    audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
+    flipSoundGain = flipSoundGain || audioContext.createGain();
+    flipSoundGain.gain.value = parseFloat(flipVolumeElem.value || 0.3);
+    flipSoundGain.connect(audioContext.destination);
+
+    bgMusicGain = bgMusicGain || audioContext.createGain();
+    bgMusicGain.gain.value = parseFloat(bgmVolumeElem.value || 0.7);
+    bgMusicGain.connect(audioContext.destination);
+  } catch(err){
+    console.error('Audio init failed', err);
+  }
+}
+
+let musicPlaying = false;
+playMusicBtn.addEventListener('click', async () => {
+  try{
+    if(!audioContext) initAudio();
+    if(musicPlaying && bgMusicSource){
+      try { bgMusicSource.stop(); } catch(e){}
+      bgMusicSource = null;
+      musicPlaying = false;
+      playMusicBtn.textContent = 'Play Music 🎶';
+      return;
+    }
+
+    const resp = await fetch('a-call-to-the-soul-149262.mp3');
+    const arrayBuf = await resp.arrayBuffer();
+    const buffer = await audioContext.decodeAudioData(arrayBuf);
+    if(bgMusicSource) try { bgMusicSource.stop(); } catch(e){}
+    bgMusicSource = audioContext.createBufferSource();
+    bgMusicSource.buffer = buffer;
+    bgMusicSource.loop = true;
+    bgMusicSource.connect(bgMusicGain);
+    bgMusicSource.start(0);
+    musicPlaying = true;
+    playMusicBtn.textContent = 'Pause Music ⏸️';
+  } catch(err){
+    console.error('Music load/play error:', err);
+    alert('Could not load music. Make sure a-call-to-the-soul-149262.mp3 is in the same folder.');
+  }
+});
+
+function playFlipSound(){
+  if(!audioContext || !flipSoundGain) return;
+  const o = audioContext.createOscillator();
+  o.type = 'sine';
+  o.frequency.value = 600;
+  o.connect(flipSoundGain);
+  o.start();
+  o.stop(audioContext.currentTime + 0.08);
+}
+
+flipVolumeElem.addEventListener('input', ()=> {
+  if(flipSoundGain) flipSoundGain.gain.value = parseFloat(flipVolumeElem.value);
+});
+bgmVolumeElem.addEventListener('input', ()=> {
+  if(bgMusicGain) bgMusicGain.gain.value = parseFloat(bgmVolumeElem.value);
+});
+
+/* ===================== Date helper ===================== */
+function getTodayKey(){
+  // using UTC to avoid timezone mismatch with server
+  const d = new Date();
+  const yyyy = d.getUTCFullYear();
+  const mm = String(d.getUTCMonth() + 1).padStart(2,'0');
+  const dd = String(d.getUTCDate()).padStart(2,'0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+/* ===================== Questions load & board ===================== */
+async function loadTodayQuestions(){
+  const todayKey = getTodayKey();
+  const snap = await db.ref('dailyQuestions/' + todayKey).get();
+  if(snap.exists()){
+    currentQuestions = snap.val();
+  } else {
+    // fallback to latest available questions if today's not set
+    const allSnap = await db.ref('dailyQuestions').get();
+    if(allSnap.exists()){
+      const obj = allSnap.val();
+      const dates = Object.keys(obj).sort();
+      if(dates.length) currentQuestions = obj[dates[dates.length - 1]];
+      else currentQuestions = Array(9).fill('?');
+    } else {
+      currentQuestions = Array(9).fill('?');
+    }
+  }
+  // ensure exactly 9 entries for grid
+  if(!Array.isArray(currentQuestions)) currentQuestions = Array(9).fill('?');
+  if(currentQuestions.length < 9) {
+    const diff = 9 - currentQuestions.length;
+    currentQuestions = currentQuestions.concat(Array(diff).fill('?'));
+  } else if(currentQuestions.length > 9) {
+    currentQuestions = currentQuestions.slice(0,9);
+  }
+
+  sortedQuestions = [...currentQuestions].slice().sort((a,b) => String(a).localeCompare(String(b)));
+}
+
+function createBoard(){
+  grid.innerHTML = '';
+  currentQuestions.forEach((q, i) => {
+    const c = document.createElement('div');
+    c.className = 'card';
+    c.setAttribute('role','button');
+    c.setAttribute('aria-label','card '+(i+1));
+    const inner = document.createElement('div');
+    inner.className = 'inner';
+    const front = document.createElement('div');
+    front.className = 'front';
+    front.textContent = '?';
+    const back = document.createElement('div');
+    back.className = 'back';
+    back.textContent = q;
+    inner.append(front, back);
+    c.appendChild(inner);
+    c.onclick = () => flipCard(c, String(q));
+    grid.appendChild(c);
+  });
+}
+
+/* ---------------- flip logic ---------------- */
+function flipCard(card, q){
+  if(card.classList.contains('flipped')) return;
+  card.classList.add('flipped');
+  playFlipSound();
+
+  if(lastFlipped && String(q).localeCompare(String(lastFlipped)) < 0){
+    // wrong order
+    setTimeout(()=> {
+      resetBoard();
+      attempts++;
+      attemptsDisplay.textContent = attempts;
+    }, 500);
+    return;
+  }
+
+  lastFlipped = q;
+
+  if(q === sortedQuestions[currentIndex]){
+    currentIndex++;
+    if(currentIndex === currentQuestions.length){
+      setTimeout(async ()=> {
+        const res = await saveScore(); // always saves to today's leaderboard
+        if(res && res.saved){
+          showResultModal("Your score has been saved in today's daily leaderboard.", true);
+        } else {
+          const reason = (res && res.reason) ? res.reason : "an error occurred while saving";
+          // proper english sentence (capitalize first letter)
+          const sentence = reason.charAt(0).toUpperCase() + reason.slice(1);
+          showResultModal("Your score was not saved because " + sentence + ".", false);
+        }
+        // do not change currently selected leaderboard date in UI
+        restartBtn.style.display = 'block';
+      }, 300);
+    }
+  }
+}
+
+function resetBoard(){
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('flipped'));
+  currentIndex = 0;
+  lastFlipped = '';
+}
+
+/* ===================== Save score (always current date) ===================== */
+async function saveScore(){
+  try {
+    const todayKey = getTodayKey(); // always use today's date
+    const todayRef = db.ref('dailyLeaderboard/' + todayKey);
+
+    const snap = await todayRef.get();
+    let allEntries = snap.exists() ? snap.val() : {};
+    let userTries = 0;
+    let duplicateSameAttempt = false;
+
+    // Check existing entries
+    for(const key in allEntries){
+      const entry = allEntries[key];
+      if(entry.name === playerName){
+        userTries++;
+        if(Number(entry.attempts) === Number(attempts)){
+          duplicateSameAttempt = true;
+        }
+      }
+    }
+
+    if(duplicateSameAttempt){
+      return { saved: false, reason: "the same user with the same number of attempts is not allowed in the leaderboard" };
+    }
+
+    const newEntry = {
+      name: playerName,
+      attempts: Number(attempts),
+      tries: userTries + 1,
+      timestamp: Date.now()
+    };
+    await todayRef.push(newEntry);
+    return { saved: true, reason: null };
+
+  } catch(err) {
+    console.error("saveScore error:", err);
+    return { saved: false, reason: "an error occurred while saving" };
+  }
+}
+
+/* ===================== Result modal helper ===================== */
+let modalTimeout = null;
+function showResultModal(message, success){
+  clearTimeout(modalTimeout);
+  resultModal.classList.remove('success','error');
+  resultModal.classList.add(success ? 'success' : 'error');
+  resultMsg.textContent = message;
+  resultModal.classList.add('show');
+  resultModal.style.display = 'block';
+
+  modalTimeout = setTimeout(()=> {
+    resultModal.classList.remove('show','success','error');
+    resultModal.style.display = 'none';
+  }, 3500);
+}
+
+/* ===================== Leaderboard fetch & render ===================== */
+function detachActiveListener(){
+  if(activeLeaderboardRef){
+    try { activeLeaderboardRef.off('value'); } catch(e){ /* noop */ }
+    activeLeaderboardRef = null;
+  }
+}
+
+function fetchLeaderboardByDate(dateKey){
+  if(!dateKey) return;
+  detachActiveListener();
+
+  const ref = db.ref('dailyLeaderboard/' + dateKey);
+  activeLeaderboardRef = ref;
+
+  ref.on('value', snapshot => {
+    leaderboardElement.innerHTML = '';
+
+    if(!snapshot.exists()){
+      const r = document.createElement('tr');
+      r.innerHTML = `<td colspan="4">No players</td>`;
+      leaderboardElement.appendChild(r);
+      return;
+    }
+
+    // Gather entries
+    const allEntries = [];
+    snapshot.forEach(childSnap => {
+      const val = childSnap.val();
+      allEntries.push({
+        key: childSnap.key,
+        name: String(val.name || ''),
+        attempts: Number(val.attempts || 0),
+        tries: Number(val.tries || 0),
+        timestamp: Number(val.timestamp || 0)
+      });
+    });
+
+    // Deduplicate per user+attempts: keep earliest
+    const map = new Map(); // key = name + '::' + attempts
+    for(const e of allEntries){
+      const mapKey = e.name + '::' + e.attempts;
+      if(!map.has(mapKey)){
+        map.set(mapKey, e);
+      } else {
+        const existing = map.get(mapKey);
+        if((e.timestamp || 0) < (existing.timestamp || 0)){
+          map.set(mapKey, e);
+        }
+      }
+    }
+
+    const filtered = Array.from(map.values());
+
+    // Sort by attempts asc, then tries asc, then timestamp asc
+    filtered.sort((a,b) => {
+      if(a.attempts !== b.attempts) return a.attempts - b.attempts;
+      if(a.tries !== b.tries) return a.tries - b.tries;
+      return a.timestamp - b.timestamp;
+    });
+
+    // Competition ranking: ties share same rank
+    let prevAttempts = null, prevTries = null, prevRank = 0;
+    filtered.forEach((val, idx) => {
+      let rank;
+      if(val.attempts === prevAttempts && val.tries === prevTries){
+        rank = prevRank;
+      } else {
+        rank = idx + 1;
+        prevAttempts = val.attempts;
+        prevTries = val.tries;
+        prevRank = rank;
+      }
+
+      const r = document.createElement('tr');
+      if(rank === 1) r.classList.add('rank-1');
+      if(rank === 2) r.classList.add('rank-2');
+      if(rank === 3) r.classList.add('rank-3');
+      r.innerHTML = `<td>${rank}</td><td>${val.name}</td><td>${val.attempts}</td><td>${val.tries}</td>`;
+      leaderboardElement.appendChild(r);
+    });
+
+  });
+}
+
+/* ===================== Init ===================== */
+document.addEventListener('DOMContentLoaded', async () => {
+  // ask username
+  const ok = await askForUsername();
+  if(!ok) return;
+
+  attemptsDisplay.textContent = attempts;
+
+  // load today's questions and render board
+  await loadTodayQuestions();
+  createBoard();
+
+  // set leaderboard date to UTC today and attach listener
+  const todayKey = getTodayKey();
+  leaderboardDate.value = todayKey;
+  fetchLeaderboardByDate(todayKey);
+
+  // admin prompt
+  const isAdmin = confirm('Open Admin Panel?');
+  if(isAdmin) adminLogin();
+});
+
+/* ===================== Events ===================== */
+flipVolumeElem.oninput = e => { if(flipSoundGain) flipSoundGain.gain.value = parseFloat(e.target.value); };
+bgmVolumeElem.oninput = e => { if(bgMusicGain) bgMusicGain.gain.value = parseFloat(bgmVolumeElem.value); };
+restartBtn.onclick = () => { resetBoard(); attempts = 1; attemptsDisplay.textContent = attempts; restartBtn.style.display = 'none'; };
+leaderboardDate.onchange = e => { fetchLeaderboardByDate(e.target.value); };
+
 </script>
 </body>
 </html>
